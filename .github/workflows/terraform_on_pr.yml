@@ -50,13 +50,6 @@ jobs:
         run: |
           git config --global user.name 'GitHub Actions'
           git config --global user.email 'something@users.noreply.github.com'
-          git commit -am "Add updated state" terraform.tfstate terraform.tfstate.backup
+          git add terraform.tfstate terraform.tfstate.backup
+          git commit -m "Add updated state" 
           git push
-
-
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # - name: 'Terrahelp Encrypt'
-      #   uses: gesellix/terrahelp-github-action@v1.1
-      #   with:
-      #     th_working_dir: ${{ env.tf_working_dir }}
-      #     args: encrypt --mode=full --simple-key=${{ secrets.TERRAHELP_KEY }} --nobackup --file terraform.tfstate --file terraform.tfstate.backup
