@@ -1,0 +1,39 @@
+name: 'Terraform GitHub Actions'
+on:
+  - pull_request
+env:
+  tf_version: 1.4.6
+  tf_working_dir: .
+jobs:
+  terraform:
+    name: 'Terraform Plan'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@master
+      - name: 'Terrahelp Decrypt'
+        uses: gesellix/terrahelp-github-action@v1.1
+        with:
+          th_working_dir: ${{ env.tf_working_dir }}
+          args: decrypt --mode=full --simple-key=${{ secrets.TERRAHELP_KEY }} --nobackup --file terraform.tfstate.enc --file terraform.tfstate.backup
+      - name: 'Terraform Init'
+        uses: hashicorp/terraform-github-actions@master
+        with:
+          tf_actions_version: ${{ env.tf_version }}
+          tf_actions_working_dir: ${{ env.tf_working_dir }}
+          tf_actions_subcommand: 'init'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 'Terraform Plan'
+        uses: hashicorp/terraform-github-actions@master
+        with:
+          tf_actions_version: ${{ env.tf_version }}
+          tf_actions_working_dir: ${{ env.tf_working_dir }}
+          tf_actions_subcommand: 'plan'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 'Terrahelp Encrypt'
+        uses: gesellix/terrahelp-github-action@v1.1
+        with:
+          th_working_dir: ${{ env.tf_working_dir }}
+          args: encrypt --mode=full --simple-key=${{ secrets.TERRAHELP_KEY }} --nobackup --file terraform.tfstate --file terraform.tfstate.backup
