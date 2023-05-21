@@ -4,36 +4,59 @@ on:
 env:
   tf_version: 1.4.6
   tf_working_dir: .
+  terrahelp_shasum: b086a87b7d98c4c84767836e897663ec7fa1ae678230a55041abdc817579a04f
 jobs:
   terraform:
     name: 'Terraform Plan'
+    environment: prod
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout'
-        uses: actions/checkout@master
-      - name: 'Terrahelp Decrypt'
-        uses: gesellix/terrahelp-github-action@v1.1
-        with:
-          th_working_dir: ${{ env.tf_working_dir }}
-          args: decrypt --mode=full --simple-key=${{ secrets.TERRAHELP_KEY }} --nobackup --file terraform.tfstate.enc --file terraform.tfstate.backup
-      - name: 'Terraform Init'
-        uses: hashicorp/terraform-github-actions@master
-        with:
-          tf_actions_version: ${{ env.tf_version }}
-          tf_actions_working_dir: ${{ env.tf_working_dir }}
-          tf_actions_subcommand: 'init'
+      - uses: hashicorp/setup-terraform@v2
+      - uses: actions/checkout@master
+
+      - name: 'Get Terrahelp Binary'
+        run: wget -c https://github.com/opencredo/terrahelp/releases/download/v0.7.5/terrahelp_0.7.5_linux_amd64.tar.gz -O - | tar -xz
+
+      - name: 'Check Integrity' # Double space needed between SHA and filename
+        run: echo "${{ env.terrahelp_shasum }}  ./terrahelp" | shasum -a256 -c-
+
+      - name: 'Decrypt State'
+        run: ./terrahelp decrypt --mode=full --simple-key=${{ secrets.TERRAHELP_KEY }} --nobackup --file terraform.tfstate -file=terraform.tfstate.backup
+
+      - id: init
+        run: terraform init
+
+      - id: validate
+        run: terraform validate -no-color
+
+      - id: plan
+        run: terraform plan -no-color --input=false
+        continue-on-error: false
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: 'Terraform Plan'
-        uses: hashicorp/terraform-github-actions@master
-        with:
-          tf_actions_version: ${{ env.tf_version }}
-          tf_actions_working_dir: ${{ env.tf_working_dir }}
-          tf_actions_subcommand: 'plan'
+          TF_VAR_cloudflare_zone_id: ${{ secrets.CF_ZONE_ID }}
+          TF_VAR_cloudflare_api_token: ${{ secrets.CF_API_TOKEN }}
+
+      - id: apply
+        run: terraform apply -no-color --input=false -auto-approve
+        continue-on-error: false
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: 'Terrahelp Encrypt'
-        uses: gesellix/terrahelp-github-action@v1.1
-        with:
-          th_working_dir: ${{ env.tf_working_dir }}
-          args: encrypt --mode=full --simple-key=${{ secrets.TERRAHELP_KEY }} --nobackup --file terraform.tfstate --file terraform.tfstate.backup
+          TF_VAR_cloudflare_zone_id: ${{ secrets.CF_ZONE_ID }}
+          TF_VAR_cloudflare_api_token: ${{ secrets.CF_API_TOKEN }}
+
+      - name: 'Encrypt State'
+        run: ./terrahelp encrypt --mode=full --simple-key=${{ secrets.TERRAHELP_KEY }} --nobackup --file terraform.tfstate -file=terraform.tfstate.backup
+      
+      - name: 'Commit New State'
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'something@users.noreply.github.com'
+          git commit -am "Add updated state" terraform.tfstate terraform.tfstate.backup
+          git push
+
+
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: 'Terrahelp Encrypt'
+      #   uses: gesellix/terrahelp-github-action@v1.1
+      #   with:
+      #     th_working_dir: ${{ env.tf_working_dir }}
+      #     args: encrypt --mode=full --simple-key=${{ secrets.TERRAHELP_KEY }} --nobackup --file terraform.tfstate --file terraform.tfstate.backup
