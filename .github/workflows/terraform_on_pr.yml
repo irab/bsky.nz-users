@@ -5,6 +5,7 @@ on:
   pull_request:
     paths-ignore:
       - '*.tfstate'
+      - '.github/workflows/*'
 
 permissions:
   contents: write
