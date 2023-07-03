@@ -1,9 +1,11 @@
 name: 'PR - Deploy to Prod'
 on:
   workflow_dispatch:
+  merge_group:
   pull_request:
     paths-ignore:
       - '*.tfstate'
+      - '.github/workflows/*'
 
 permissions:
   contents: write
