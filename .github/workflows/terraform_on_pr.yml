@@ -1,9 +1,9 @@
 name: 'PR - Deploy to Prod'
 on:
-  pull_request:
-    paths:
-      - '!*.tfstate'
   workflow_dispatch:
+  pull_request:
+    paths-ignore:
+      - '*.tfstate'
 
 permissions:
   contents: write
