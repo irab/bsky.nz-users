@@ -1,4 +1,6 @@
-# bsky.nz DNS-TXT-aaS
-DNS records for bsky.nz - by [Ira Bailey](https://bsky.app/profile/ira.bailey.nz)
+# bsky.nz usernames-as-a-service
 
-Add your username and Bluesky DID in [dids.csv](dids.csv) then raise a PR. Once approved, the TXT record will be created.
+Simple PoC to allow anyone to easily add their _atproto DID for a bsky.nz handle by raising a PR from a fork.
+
+
+Add your username and Bluesky DID in [dids.csv](dids.csv) then raise a PR. [Ping me on BlueSky](https://bsky.app/profile/ira.bailey.nz) and I'll approve it a.s.a.p.
