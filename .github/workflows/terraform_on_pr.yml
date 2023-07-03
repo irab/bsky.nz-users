@@ -60,4 +60,4 @@ jobs:
           git config --global user.email 'something@users.noreply.github.com'
           git add terraform.tfstate terraform.tfstate.backup
           git commit -m "Add updated state" 
-          git push origin HEAD:${{ github.ref_name }}
+          git push origin
