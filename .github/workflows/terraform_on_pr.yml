@@ -1,6 +1,6 @@
 name: 'PR - Deploy to Prod'
 on:
-  - pull_request_target
+  - pull_request
   - workflow_dispatch
 permissions:
   contents: write
@@ -10,7 +10,7 @@ env:
   terrahelp_shasum: b086a87b7d98c4c84767836e897663ec7fa1ae678230a55041abdc817579a04f
 jobs:
   terraform:
-    name: 'Terraform Plan'
+    name: 'Terraform Plan and Apply'
     environment: prod
     runs-on: ubuntu-latest
     steps:
