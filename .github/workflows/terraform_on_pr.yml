@@ -1,6 +1,7 @@
-name: 'Terraform GitHub Actions'
+name: 'PR - Deploy to Prod'
 on:
   - pull_request_target
+  - workflow_dispatch
 permissions:
   contents: write
 env:
