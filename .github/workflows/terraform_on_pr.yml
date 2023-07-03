@@ -17,6 +17,8 @@ jobs:
       - uses: actions/checkout@v3
       - name: 'Checkout PR'
         run: gh pr checkout ${{ github.event.pull_request.number }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Get Terrahelp Binary'
         run: wget -c https://github.com/opencredo/terrahelp/releases/download/v0.7.5/terrahelp_0.7.5_linux_amd64.tar.gz -O - | tar -xz
